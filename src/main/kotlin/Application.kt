@@ -6,7 +6,7 @@ import ru.sug4chy.usecase.implementation.ExpenseUseCaseImpl
 fun main(args: Array<String>) {
     try {
         val useCase = ExpenseUseCaseImpl(FileSystemExpenseRepository())
-        useCase.createExpense("desc", 1.0)
+        println(useCase.createExpense("desc", 1.0))
     } catch(e: Exception) {
         handleException(e)
     }

@@ -1,39 +1,40 @@
 package ru.sug4chy.repository.implementation
 
+import ru.sug4chy.entity.Expense
 import ru.sug4chy.repository.ExpenseRepository
 import java.io.File
 import java.io.IOException
+import java.time.format.DateTimeFormatter
 
 class FileSystemExpenseRepository : ExpenseRepository {
 
-    override fun lastAddedId(): Result<Long> {
-        val file = ensureFileCreated(createIfNotExists = true)
+    override fun lastAddedId(): Long {
+        val file = ensureFileCreated()
 
         val lastAddedId = file.useLines { lines ->
             lines
                 .drop(1)
                 .map { line ->
-                    line.split(";")[0].toLongOrNull()
+                    line.split(",")[0].toLongOrNull()
                 }
                 .filterNotNull()
                 .maxOrNull()
         }
 
-        return if (lastAddedId != null)
-            Result.success(lastAddedId)
-        else
-            Result.failure(IndexOutOfBoundsException("File contains no expenses"))
+        return lastAddedId ?: 0
     }
 
-    override fun save(): Result<Unit> {
-        TODO("Not yet implemented")
-    }
+    override fun save(expense: Expense) =
+        ensureFileCreated().appendText(
+            "${expense.id},${expense.date.format(DateTimeFormatter.ISO_LOCAL_DATE)}," +
+                    "${expense.description},${expense.amount}\n"
+        )
 
     companion object {
         private val EXPENSES_CSV_FILE_PATH: String = "${System.getProperty("user.dir")}/expenses.csv"
 
         @Throws(IOException::class, NoSuchFileException::class)
-        private fun ensureFileCreated(createIfNotExists: Boolean) =
+        private fun ensureFileCreated(createIfNotExists: Boolean = true) =
             File(EXPENSES_CSV_FILE_PATH).apply {
                 if (this.exists()) {
                     return@apply
@@ -44,7 +45,7 @@ class FileSystemExpenseRepository : ExpenseRepository {
                 }
 
                 this.createNewFile()
-                this.writeText("id;date;description;amount")
+                this.writeText("id,date,description,amount\n")
             }
     }
 }

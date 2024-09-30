@@ -18,21 +18,32 @@ class ExpenseUseCaseTests {
     }
 
     @Test
-    fun `Check that createExpense() requirements work`() {
+    fun `Check that createExpense() requirements for parameter amount`() {
         assertThrows<IllegalArgumentException> {
-            expenseUseCase.createExpense("", -1.0)
+            expenseUseCase.createExpense("d", -1.0)
         }
 
         assertThrows<IllegalArgumentException> {
-            expenseUseCase.createExpense("desc", -1.0)
-        }
-
-        assertThrows<IllegalArgumentException> {
-            expenseUseCase.createExpense("", 10.0)
+            expenseUseCase.createExpense("d", 0.0)
         }
 
         assertDoesNotThrow {
-            expenseUseCase.createExpense("desc", 10.0)
+            expenseUseCase.createExpense("d", 1.0)
+        }
+    }
+
+    @Test
+    fun `Check createExpense() requirements for parameter description`() {
+        assertThrows<IllegalArgumentException> {
+            expenseUseCase.createExpense("", 1.0)
+        }
+
+        assertThrows<IllegalArgumentException> {
+            expenseUseCase.createExpense("    ", 1.0)
+        }
+
+        assertDoesNotThrow {
+            expenseUseCase.createExpense("desc", 1.0)
         }
     }
 }
