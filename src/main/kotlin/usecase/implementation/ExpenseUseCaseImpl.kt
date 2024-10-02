@@ -14,10 +14,28 @@ class ExpenseUseCaseImpl(
         require(description.isNotBlank()) { "Description cannot be blank or empty" }
 
         val newExpenseId = expenseRepository.lastAddedId() + 1
-        Expense(newExpenseId, LocalDate.now(), description, amount).let {
-            expenseRepository.save(it)
+        Expense.create(newExpenseId, LocalDate.now(), description, amount).let {
+            expenseRepository.add(it)
         }
 
         return newExpenseId
+    }
+
+    override fun updateExpense(id: Long, description: String?, amount: Double?): Result<Unit> {
+        require(amount == null || amount > 0) { "Amount must be positive" }
+        require(description == null || description.isNotBlank()) { "Description cannot be blank or empty" }
+
+        var expense = expenseRepository.findById(id) ?: return Result.failure(Exception("Expense not found"))
+
+        if (description != null && description != expense.description) {
+            expense = expense.withDescription(description)
+        }
+        if (amount != null && amount != expense.amount) {
+            expense = expense.withAmount(amount)
+        }
+
+        expenseRepository.update(expense)
+
+        return Result.success(Unit)
     }
 }

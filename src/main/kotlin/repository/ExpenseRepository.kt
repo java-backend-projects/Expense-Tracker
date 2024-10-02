@@ -4,5 +4,7 @@ import ru.sug4chy.entity.Expense
 
 interface ExpenseRepository {
     fun lastAddedId(): Long
-    fun save(expense: Expense)
+    fun findById(id: Long): Expense?
+    fun add(expense: Expense)
+    fun update(expense: Expense)
 }
