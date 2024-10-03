@@ -42,6 +42,13 @@ class FileSystemExpenseRepository : ExpenseRepository {
                 .firstOrNull { expense -> expense.id == id }
         }
 
+    override fun findAll(): List<Expense> =
+        File(EXPENSES_CSV_FILE_PATH).useLines { lines ->
+            lines
+                .withoutHeaders()
+                .map { line -> Expense.fromCsvString(line) }
+                .toList()
+        }
 
     override fun add(expense: Expense) {
         ensureFileCreated()

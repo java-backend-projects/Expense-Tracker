@@ -10,6 +10,9 @@ class ExpenseUseCaseImpl(
     private val expenseRepository: ExpenseRepository
 ) : ExpenseUseCase {
 
+    override fun listAllExpenses(): List<Expense> =
+        expenseRepository.findAll()
+
     override fun createExpense(description: String, amount: Double): Long {
         require(amount > 0) { "Amount must be positive" }
         require(description.isNotBlank()) { "Description cannot be blank or empty" }

@@ -6,6 +6,7 @@ import com.github.ajalt.clikt.core.subcommands
 import ru.sug4chy.cli.ExpenseTracker
 import ru.sug4chy.cli.commands.AddCommand
 import ru.sug4chy.cli.commands.DeleteCommand
+import ru.sug4chy.cli.commands.ListCommand
 import ru.sug4chy.cli.commands.UpdateCommand
 import ru.sug4chy.repository.ExpenseRepository
 import ru.sug4chy.repository.implementation.FileSystemExpenseRepository
@@ -23,6 +24,7 @@ fun main(args: Array<String>) =
                 AddCommand(expenseUseCase),
                 UpdateCommand(expenseUseCase),
                 DeleteCommand(expenseUseCase),
+                ListCommand(expenseUseCase)
             )
             .main(args)
     } catch (e: Exception) {
