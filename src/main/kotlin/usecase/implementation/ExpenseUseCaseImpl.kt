@@ -5,6 +5,7 @@ import ru.sug4chy.extensions.success
 import ru.sug4chy.repository.ExpenseRepository
 import ru.sug4chy.usecase.ExpenseUseCase
 import java.time.LocalDate
+import java.time.Year
 
 class ExpenseUseCaseImpl(
     private val expenseRepository: ExpenseRepository
@@ -12,6 +13,14 @@ class ExpenseUseCaseImpl(
 
     override fun listAllExpenses(): List<Expense> =
         expenseRepository.findAll()
+
+    override fun summary(): Double =
+        expenseRepository.findAll().sumOf { it.amount }
+
+    override fun summaryByMonth(month: Int): Double =
+        expenseRepository.findAll()
+            .filter { it.date.year == Year.now().value && it.date.month.value == month }
+            .sumOf { it.amount }
 
     override fun createExpense(description: String, amount: Double): Long {
         require(amount > 0) { "Amount must be positive" }

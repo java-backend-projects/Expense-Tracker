@@ -11,20 +11,20 @@ class ListCommand(
     override fun run() {
         val expenses = expenseUseCase.listAllExpenses()
 
-        var longestIdLength = expenses.maxOf { it.id.toString().length }
-        val longestDescriptionLength = expenses.maxOf { it.description.length }
-
-        longestIdLength = if (longestIdLength < 2) 2 else longestIdLength
+        val longestIdLength = expenses.maxOf { it.id.toString().length }.let { if (it < 2) 2 else it }
+        val longestDescriptionLength = expenses.maxOf { it.description.length }.let { if (it < 11) 11 else it }
 
         echo(
             headers(longestIdLength, longestDescriptionLength)
         )
 
         expenses.forEach {
-            echo("${it.id.toString().padEnd(longestIdLength)} " +
-                    "${it.date.format(DateTimeFormatter.ISO_LOCAL_DATE)} " +
-                    "${it.description.padEnd(longestDescriptionLength)} " +
-                    "\$${it.amount}")
+            echo(
+                "${it.id.toString().padEnd(longestIdLength)} " +
+                        "${it.date.format(DateTimeFormatter.ISO_LOCAL_DATE)} " +
+                        "${it.description.padEnd(longestDescriptionLength)} " +
+                        "\$${it.amount}"
+            )
         }
     }
 
