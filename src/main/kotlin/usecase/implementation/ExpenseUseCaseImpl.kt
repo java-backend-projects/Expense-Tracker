@@ -1,6 +1,7 @@
 package ru.sug4chy.usecase.implementation
 
 import ru.sug4chy.entity.Expense
+import ru.sug4chy.extensions.success
 import ru.sug4chy.repository.ExpenseRepository
 import ru.sug4chy.usecase.ExpenseUseCase
 import java.time.LocalDate
@@ -22,6 +23,7 @@ class ExpenseUseCaseImpl(
     }
 
     override fun updateExpense(id: Long, description: String?, amount: Double?): Result<Unit> {
+        require(id > 0) { "ID must be positive" }
         require(amount == null || amount > 0) { "Amount must be positive" }
         require(description == null || description.isNotBlank()) { "Description cannot be blank or empty" }
 
@@ -36,6 +38,16 @@ class ExpenseUseCaseImpl(
 
         expenseRepository.update(expense)
 
-        return Result.success(Unit)
+        return Result.success()
+    }
+
+    override fun deleteExpenseById(id: Long): Result<Unit> {
+        if (!expenseRepository.containsById(id)) {
+            return Result.failure(Exception("Expense not found"))
+        }
+
+        expenseRepository.removeById(id)
+
+        return Result.success()
     }
 }

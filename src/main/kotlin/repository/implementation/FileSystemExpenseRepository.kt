@@ -9,15 +9,13 @@ import java.io.IOException
 class FileSystemExpenseRepository : ExpenseRepository {
 
     override fun lastAddedId(): Long {
-        ensureFileCreated(createIfNotExists = true)
+        ensureFileCreated()
         val file = File(EXPENSES_CSV_FILE_PATH)
 
         val lastAddedId = file.useLines { lines ->
             lines
                 .withoutHeaders()
-                .map { line ->
-                    line.split(",")[0].toLongOrNull()
-                }
+                .map { line -> line.split(",")[0].toLongOrNull() }
                 .filterNotNull()
                 .maxOrNull()
         }
@@ -25,39 +23,59 @@ class FileSystemExpenseRepository : ExpenseRepository {
         return lastAddedId ?: 0
     }
 
-    override fun findById(id: Long): Expense? {
-        ensureFileCreated()
+    override fun containsById(id: Long): Boolean {
+        val file = File(EXPENSES_CSV_FILE_PATH)
 
-        return File(EXPENSES_CSV_FILE_PATH).useLines { lines ->
+        return file.useLines { lines ->
             lines
                 .withoutHeaders()
-                .map { line ->
-                    Expense.fromCsvString(line)
-                }
-                .firstOrNull { expense -> expense.id == id }
-        }
+                .map { line -> Expense.fromCsvString(line) }
+                .firstOrNull { e -> e.id == id }
+        } != null
     }
 
+    override fun findById(id: Long): Expense? =
+        File(EXPENSES_CSV_FILE_PATH).useLines { lines ->
+            lines
+                .withoutHeaders()
+                .map { line -> Expense.fromCsvString(line) }
+                .firstOrNull { expense -> expense.id == id }
+        }
+
+
     override fun add(expense: Expense) {
-        ensureFileCreated(createIfNotExists = true)
+        ensureFileCreated()
         File(EXPENSES_CSV_FILE_PATH).appendText(expense.toCsvString())
     }
 
+    override fun update(expense: Expense) =
+        rewriteFileWithApplying { file ->
+            return@rewriteFileWithApplying { line ->
+                if (line.startsWith("${expense.id},")) {
+                    file.appendText(expense.toCsvString())
+                } else {
+                    file.appendText("$line\n")
+                }
+            }
+        }
+
+    override fun removeById(id: Long) =
+        rewriteFileWithApplying { file ->
+            return@rewriteFileWithApplying { line ->
+                if (!line.startsWith("$id,")) {
+                    file.appendText("$line\n")
+                }
+            }
+        }
+
     @Throws(IOException::class)
-    override fun update(expense: Expense) {
-        ensureFileCreated()
+    private fun rewriteFileWithApplying(lineAction: (File) -> (String) -> Unit) {
         val file = File(EXPENSES_CSV_FILE_PATH)
         val tempFile = File("$EXPENSES_CSV_FILE_PATH.tmp").also {
             it.createNewFile()
         }
 
-        file.forEachLine { line ->
-            if (line.startsWith("${expense.id},")) {
-                tempFile.appendText(expense.toCsvString())
-            } else {
-                tempFile.appendText("$line\n")
-            }
-        }
+        file.forEachLine(action = lineAction(tempFile))
 
         file.delete()
         tempFile.renameTo(file)
@@ -66,15 +84,11 @@ class FileSystemExpenseRepository : ExpenseRepository {
     companion object {
         private val EXPENSES_CSV_FILE_PATH: String = "${System.getProperty("user.dir")}/expenses.csv"
 
-        @Throws(IOException::class, NoSuchFileException::class)
-        private fun ensureFileCreated(createIfNotExists: Boolean = false) =
+        @Throws(IOException::class)
+        private fun ensureFileCreated() =
             with(File(EXPENSES_CSV_FILE_PATH)) {
                 if (this.exists()) {
                     return
-                }
-
-                if (!createIfNotExists) {
-                    throw NoSuchFileException(this)
                 }
 
                 this.createNewFile()
