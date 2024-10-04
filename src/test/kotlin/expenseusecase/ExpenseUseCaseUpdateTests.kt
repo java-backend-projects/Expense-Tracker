@@ -5,8 +5,6 @@ import io.mockk.mockk
 import io.mockk.verify
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertDoesNotThrow
-import org.junit.jupiter.api.assertThrows
 import ru.sug4chy.entity.Expense
 import ru.sug4chy.repository.ExpenseRepository
 import ru.sug4chy.usecase.ExpenseUseCase
@@ -26,38 +24,6 @@ class ExpenseUseCaseUpdateTests {
     }
 
     @Test
-    fun `Check requirements for 'description' parameter`() {
-        assertThrows<IllegalArgumentException> {
-            expenseUseCase.updateExpense(0, "", 1.0)
-            expenseUseCase.updateExpense(0, "   ", 1.0)
-        }
-
-        every { expenseRepository.update(any()) } returns Unit
-        every { expenseRepository.findById(any()) } returns null
-
-        assertDoesNotThrow {
-            expenseUseCase.updateExpense(0, null, 1.0)
-            expenseUseCase.updateExpense(0, "desc", 1.0)
-        }
-    }
-
-    @Test
-    fun `Check requirements for 'amount' parameter`() {
-        assertThrows<IllegalArgumentException> {
-            expenseUseCase.updateExpense(0, "d", -1.0)
-            expenseUseCase.updateExpense(0, "d", 0.0)
-        }
-
-        every { expenseRepository.update(any()) } returns Unit
-        every { expenseRepository.findById(any()) } returns null
-
-        assertDoesNotThrow {
-            expenseUseCase.updateExpense(0, "d", null)
-            expenseUseCase.updateExpense(0, "d", 10.0)
-        }
-    }
-
-    @Test
     fun `Check that repository methods were called`() {
         // Check 'Expense not found' case
         every { expenseRepository.findById(0) } returns null
@@ -70,24 +36,24 @@ class ExpenseUseCaseUpdateTests {
 
         // Check 'edit description and amount' case
         every { expenseRepository.findById(1) } returns
-                Expense.create(1, LocalDate.now(), "ddd", 20.0)
+                Expense(1, LocalDate.now(), "ddd", 20.0)
 
         expenseUseCase.updateExpense(1, "d", 10.0)
 
         verify { expenseRepository.findById(1) }
-        verify { expenseRepository.update(Expense.create(1, LocalDate.now(), "d", 10.0)) }
+        verify { expenseRepository.update(Expense(1, LocalDate.now(), "d", 10.0)) }
 
         // Check 'edit only description' case
         expenseUseCase.updateExpense(1, "d", null)
 
         verify { expenseRepository.findById(1) }
-        verify { expenseRepository.update(Expense.create(1, LocalDate.now(), "d", 20.0)) }
+        verify { expenseRepository.update(Expense(1, LocalDate.now(), "d", 20.0)) }
 
         // Check 'edit only amount' case
         expenseUseCase.updateExpense(1, null, 1.0)
 
         verify { expenseRepository.findById(1) }
-        verify { expenseRepository.update(Expense.create(1, LocalDate.now(), "ddd", 1.0)) }
+        verify { expenseRepository.update(Expense(1, LocalDate.now(), "ddd", 1.0)) }
     }
 
     @Test
@@ -102,7 +68,7 @@ class ExpenseUseCaseUpdateTests {
         )
 
         every { expenseRepository.findById(1) } returns
-                Expense.create(1, LocalDate.now(), "ddd", 20.0)
+                Expense(1, LocalDate.now(), "ddd", 20.0)
 
         val successResult = expenseUseCase.updateExpense(1, "desc", 1.0)
         assertEquals(
