@@ -76,7 +76,7 @@ class FileSystemExpenseRepository : ExpenseRepository {
         }
 
     @Throws(IOException::class)
-    private fun rewriteFileWithApplying(lineAction: (File) -> (String) -> Unit) {
+    private inline fun rewriteFileWithApplying(lineAction: (File) -> (String) -> Unit) {
         val file = File(EXPENSES_CSV_FILE_PATH)
         val tempFile = File("$EXPENSES_CSV_FILE_PATH.tmp").also {
             it.createNewFile()

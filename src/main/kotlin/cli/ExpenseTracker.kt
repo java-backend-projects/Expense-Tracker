@@ -1,14 +1,10 @@
 package ru.sug4chy.cli
 
-import com.github.ajalt.clikt.core.CliktCommand
-import com.github.ajalt.clikt.core.Context
+import ru.sug4chy.cli.commands.abstractions.BaseCliCommand
 
-class ExpenseTracker : CliktCommand(
+class ExpenseTracker : BaseCliCommand(
+    help = "CLI application for tracking your expenses.",
     name = "expense-tracker"
 ) {
-
-    override fun help(context: Context): String =
-        "CLI application for tracking your expenses."
-
     override fun run() = Unit
 }

@@ -23,11 +23,8 @@ class ExpenseUseCaseImpl(
             .sumOf { it.amount }
 
     override fun createExpense(description: String, amount: Double): Long {
-        require(amount > 0) { "Amount must be positive" }
-        require(description.isNotBlank()) { "Description cannot be blank or empty" }
-
         val newExpenseId = expenseRepository.lastAddedId() + 1
-        Expense.create(newExpenseId, LocalDate.now(), description, amount).let {
+        Expense(newExpenseId, LocalDate.now(), description, amount).let {
             expenseRepository.add(it)
         }
 
@@ -35,17 +32,13 @@ class ExpenseUseCaseImpl(
     }
 
     override fun updateExpense(id: Long, description: String?, amount: Double?): Result<Unit> {
-        require(id > 0) { "ID must be positive" }
-        require(amount == null || amount > 0) { "Amount must be positive" }
-        require(description == null || description.isNotBlank()) { "Description cannot be blank or empty" }
-
         var expense = expenseRepository.findById(id) ?: return Result.failure(Exception("Expense not found"))
 
         if (description != null && description != expense.description) {
-            expense = expense.withDescription(description)
+            expense = expense.copy(description = description)
         }
         if (amount != null && amount != expense.amount) {
-            expense = expense.withAmount(amount)
+            expense = expense.copy(amount = amount)
         }
 
         expenseRepository.update(expense)

@@ -1,12 +1,15 @@
 package ru.sug4chy.cli.commands
 
-import com.github.ajalt.clikt.core.CliktCommand
+import ru.sug4chy.cli.commands.abstractions.BaseCliCommand
 import ru.sug4chy.usecase.ExpenseUseCase
 import java.time.format.DateTimeFormatter
 
 class ListCommand(
     private val expenseUseCase: ExpenseUseCase
-) : CliktCommand() {
+) : BaseCliCommand(
+    help = "Shows all saved expenses.",
+    name = "list"
+) {
 
     override fun run() {
         val expenses = expenseUseCase.listAllExpenses()
